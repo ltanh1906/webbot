@@ -1,0 +1,79 @@
+version: '2.0'
+session_config:
+  session_expiration_time: 360
+  carry_over_slots_to_new_session: true
+intents:
+- greet:
+    use_entities: true
+- ask_for_product:
+    use_entities: true
+- ask_so_luong
+- inform_mua_hang
+- mua_hang
+- select_product
+entities:
+  - type_product
+  - color
+  - ma_sp
+  - so_luong
+  - phan_loai
+slots:
+  ma_sp:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
+  ten_sp:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
+  so_luong:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
+  phan_loai:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
+  sp_phan_loai:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
+  type_phan_loai:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
+
+responses:
+  utter_greet:
+  - text: I am a bot, powered by Rasa.
+  utter_ask_for_product:
+  - text: Để mình tìm xem nhé
+  utter_ask_so_luong:
+  - text: Bạn muốn số lượng bao nhiêu nhỉ ?
+
+actions:
+  - goi_y_sp
+  - action_ask_phan_loai
+  - set_product
+  - set_sp_phan_loai
+  - validate_mua_hang_form
+forms:
+  mua_hang_form:
+    required_slots:
+      ma_sp:
+      - entity: ma_sp
+        type: from_entity
+      phan_loai:
+      - entity: phan_loai
+        type: from_entity
+      so_luong:
+      - entity: so_luong
+        type: from_entity
+      
+e2e_actions: []

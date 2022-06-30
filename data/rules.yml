@@ -1,0 +1,24 @@
+version: "2.0"
+
+rules:
+
+- rule: Tu van san pham
+  steps:
+  - intent: ask_for_product
+  - action: goi_y_sp
+
+- rule: Tu van so luong con lai
+  steps:
+  - intent: ask_so_luong
+  - action: check_so_luong
+  
+- rule: Set masp va phan loai
+  steps:
+  - intent: select_product
+  - action: set_product
+
+- rule: Active form mua hang
+  steps:
+  - intent: mua_hang
+  - action: mua_hang_form
+  - active_loop: mua_hang_form

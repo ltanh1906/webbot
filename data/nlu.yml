@@ -1,0 +1,80 @@
+version: "2.0"
+
+nlu:
+
+- synonym: Xanh
+  examples: |
+    - xanh
+    - chàm
+    - cham
+
+
+- synonym: Đỏ
+  examples: |
+    - Đỏ
+    - do
+
+- synonym: Vàng
+  examples: |
+    - Vàng
+    - vang
+
+- synonym: Đen
+  examples: |
+    - Black
+    - den
+    - đen
+
+- lookup: color
+  examples: |
+    - Đỏ
+    - Vàng
+    - Xanh
+    - Đen
+    - Trắng
+
+- lookup: type_product
+  examples: |
+    - Bút bi
+    - Thước kẻ
+    - Vở
+    - Máy tính
+
+
+- intent: greet
+  examples: |
+    - Xin chào
+
+
+- intent: ask_for_product
+  examples: |
+    - Shop co [but chi](type_product:Bút chì) mau [vang]{"entity":"color", "value":"Vàng"} không ?
+    - Tim [vo](type_product:Vở) mau [chàm]{"entity":"color", "value":"Xanh"}
+    - Co [but](type_product:bút) mau [den]("entity":"color", "value":"Đen) khong ?
+
+- intent: mua_hang
+  examples: |
+    - Tôi mốn đặt hàng
+    - Đặt hàng
+    - \mua [BUT1](ma_sp)
+
+- intent: select_product
+  examples: |
+    - \select [BUT1](ma_sp)
+
+- intent: inform_mua_hang
+  examples: |
+    - [1](so_luong)
+    - [-2](so_luong)
+    - [Đỏ](phan_loai)
+    - màu [Vàng](phan_loai)
+    - cho anh màu [den](phan_loai:Đen) nhé
+    - /sp_pl [BUT1_PL1](sp_phan_loai) /phan_loai [Đỏ](phan_loai)
+
+- intent: ask_so_luong
+  examples: |
+    - Sản phẩm này còn hàng không ?
+    - Còn hàng không
+    - Còn không 
+    - Còn bao nhiêu
+    - Màu [đỏ](phan_loai) còn bao nhiêu
