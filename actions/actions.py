@@ -1,4 +1,6 @@
 
+from email import message
+from html.entities import entitydefs
 import re
 import json
 from typing import Text, List, Any, Dict
@@ -45,7 +47,7 @@ class GoiYSanPham(Action):
     def run(
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
-        query = 'SELECT sFK_Ma_SP, sanpham.sTen_SP,sFK_Ma_DD, sMota FROM `sanpham_dacdiem` JOIN sanpham ON sFK_Ma_SP = sanpham.sPK_Ma_SP'
+        query = 'SELECT sFK_Ma_SP, sanpham.sTen_SP, sFK_Ma_DD, sMota FROM `sanpham_dacdiem` JOIN sanpham ON sFK_Ma_SP = sanpham.sPK_Ma_SP'
         tensp = 0
         count_entity = 0
         count_record = 0
@@ -104,7 +106,7 @@ class AskSlotPhanLoai(Action):
         ARRAY_SELECT_PHAN_LOAI = result
         button = []
         for a in result:
-            button.append({"payload":"/sp_pl " + a['sPK_Ma_PLSP'] +"/phan_loai "+a['sFK_Ma_DD'], "title":a['sFK_Ma_DD']})
+            button.append({"payload":"/sp_pl " + a['sPK_Ma_PLSP'] +"/phan_loai "+a['sTenPL'], "title":a['sTenPL']})
         print(button)
         dispatcher.utter_message(text="Bạn chọn phân loại sản phẩm nhé", buttons = button)
         return[]
@@ -163,7 +165,26 @@ class CheckSoLuong(Action):
     def run(
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
-        for blob in tracker.latest_message['entities']:
-            if blob['entity'] == 'phan_loai':
-                return 
+        ma_sp = "BUT1"
+        if ma_sp:
+            query = f"SELECT * FROM `phanloai_sanpham` WHERE `sFK_Ma_SP` = '{ma_sp}' "
+            query_num = 0
+            entity_num = 0
+            for blob in tracker.latest_message['entities']:
+                if blob['entity'] == 'phan_loai':
+                    entity_num += 1
+                    query += f" AND `sTenPL` LIKE '%{blob['value']}%' "
+            result = query_func(query, "list")
+
+            if entity_num != 0:
+                flag = 0
+                message_return = ""
+                if result[0]['iSoLuong'] == 0:
+                    message_return += f"Phân loại hàng {result[0]['sTenPL']} đang tạm thời hết hàng"
+                    result1 = query_func(f"SELECT * FROM `phanloai_sanpham` WHERE `sFK_Ma_SP` = '{ma_sp}' AND `iSoLuong` != 0")
+                    for i, val in enumerate(result1):
+                        print(i)
+
+        else:
+            dispatcher.utter_message(text="Bạn chưa chọn sản phẩm nào")
         return[]

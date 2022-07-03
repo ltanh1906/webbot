@@ -63,6 +63,7 @@ actions:
   - set_product
   - set_sp_phan_loai
   - validate_mua_hang_form
+  - check_so_luong
 forms:
   mua_hang_form:
     required_slots:
