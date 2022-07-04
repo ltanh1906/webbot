@@ -40,6 +40,13 @@ nlu:
     - Vở
     - Máy tính
 
+- lookup: info_product
+  examples: |
+    - màu
+    - hãng
+    - xuất xứ
+    - bảo hành
+
 
 - intent: greet
   examples: |
@@ -50,7 +57,14 @@ nlu:
   examples: |
     - Shop co [but chi](type_product:Bút chì) mau [vang]{"entity":"color", "value":"Vàng"} không ?
     - Tim [vo](type_product:Vở) mau [chàm]{"entity":"color", "value":"Xanh"}
-    - Co [but](type_product:bút) mau [den]("entity":"color", "value":"Đen) khong ?
+    - Co [but](type_product:bút) mau [den]{"entity":"color", "value":"Đen"} khong ?
+
+- intent: ask_info_product
+  examples: |
+    - Sản phẩm có những [màu]{"entity":"info_product",  "value":"color"} nào
+    - Chính sách [bảo hành]{"entity":"info_product", "value":"guarantee"}
+    - [sản xuất]{"entity":"info_product",  "value":"origin"} ở đâu
+    - của [hãng]{"entity":"info_product", "value":"brand"} nào
 
 - intent: mua_hang
   examples: |

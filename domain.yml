@@ -8,6 +8,7 @@ intents:
 - ask_for_product:
     use_entities: true
 - ask_so_luong
+- ask_info_product
 - inform_mua_hang
 - mua_hang
 - select_product
@@ -17,6 +18,7 @@ entities:
   - ma_sp
   - so_luong
   - phan_loai
+  - info_product
 slots:
   ma_sp:
     type: rasa.shared.core.slots.TextSlot
@@ -64,6 +66,7 @@ actions:
   - set_sp_phan_loai
   - validate_mua_hang_form
   - check_so_luong
+  - custom_info_product
 forms:
   mua_hang_form:
     required_slots:

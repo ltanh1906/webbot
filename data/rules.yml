@@ -7,6 +7,11 @@ rules:
   - intent: ask_for_product
   - action: goi_y_sp
 
+- rule: Tu van thong tin chi tiet ve san pham
+  steps:
+  - intent: ask_info_product
+  - action: custom_info_product
+
 - rule: Tu van so luong con lai
   steps:
   - intent: ask_so_luong

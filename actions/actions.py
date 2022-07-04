@@ -1,4 +1,5 @@
 
+from cmath import e
 from email import message
 from html.entities import entitydefs
 import re
@@ -168,7 +169,6 @@ class CheckSoLuong(Action):
         ma_sp = "BUT1"
         if ma_sp:
             query = f"SELECT * FROM `phanloai_sanpham` WHERE `sFK_Ma_SP` = '{ma_sp}' "
-            query_num = 0
             entity_num = 0
             for blob in tracker.latest_message['entities']:
                 if blob['entity'] == 'phan_loai':
@@ -176,15 +176,52 @@ class CheckSoLuong(Action):
                     query += f" AND `sTenPL` LIKE '%{blob['value']}%' "
             result = query_func(query, "list")
 
-            if entity_num != 0:
-                flag = 0
+            if entity_num != 0: #Nếu khách hàng hỏi cụ thể 1 phân loại nào
                 message_return = ""
                 if result[0]['iSoLuong'] == 0:
-                    message_return += f"Phân loại hàng {result[0]['sTenPL']} đang tạm thời hết hàng"
-                    result1 = query_func(f"SELECT * FROM `phanloai_sanpham` WHERE `sFK_Ma_SP` = '{ma_sp}' AND `iSoLuong` != 0")
-                    for i, val in enumerate(result1):
-                        print(i)
-
+                    message_return += f"Phân loại hàng {result[0]['sTenPL']} đang tạm thời hết hàng. "
+                    result1 = query_func(f"SELECT * FROM `phanloai_sanpham` WHERE `sFK_Ma_SP` = '{ma_sp}' AND `iSoLuong` != 0", "list")
+                    if result1:
+                        message_return += "Phân loại "
+                        for i in result1:
+                            message_return += f"{i['sTenPL']}, "
+                        message_return = message_return[:-1]
+                        message_return += " hiện vẫn còn hàng bạn có thể cân nhắc"
+                    dispatcher.utter_message(text=message_return)
+                    return[]
+                else:
+                    message_return += f"Phân loại hàng {result[0]['sTenPL']} vẫn còn hàng ạ. "
+                    dispatcher.utter_message(text=message_return)
+                    return[]
+            else: # Nếu khách hàng KHÔNG hỏi cụ thể 1 phân loại
+                message_return = ""
+                result1 = query_func(f"SELECT * FROM `phanloai_sanpham` WHERE `sFK_Ma_SP` = '{ma_sp}' AND `iSoLuong` != 0", "list")
+                if result1:
+                    message_return += "Phân loại "
+                    for i in result1:
+                        message_return += f"{i['sTenPL']}, "
+                    message_return = message_return[:-1]
+                    message_return += " hiện vẫn còn hàng bạn có thể cân nhắc"
+                dispatcher.utter_message(text=message_return)
+                return[]
         else:
             dispatcher.utter_message(text="Bạn chưa chọn sản phẩm nào")
+        return[]
+
+class AskInfoProduct(Action):
+    def name(self) -> Text:
+        return "custom_info_product"
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> Dict[Text, Any]:
+        ma_sp = tracker.get_slot('ma_sp')
+        ma_sp = "BUT1"
+        
+        for blob in tracker.latest_message['entities']:
+            ma_dd = blob['value']
+            if blob['entity'] == 'info_product':
+                query = f"SELECT sMota FROM `sanpham_dacdiem` JOIN sanpham on sFK_Ma_SP = sanpham.sPK_Ma_SP WHERE `sFK_Ma_SP` = '{ma_sp}' and `sFK_Ma_DD` = '{ma_dd}'"
+        if query:
+            result = query_func(query, 'list')
+            print(result)
         return[]
