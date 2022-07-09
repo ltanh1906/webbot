@@ -12,6 +12,8 @@ intents:
 - inform_mua_hang
 - mua_hang
 - select_product
+- dong_y
+- tu_choi
 entities:
   - type_product
   - color
@@ -19,6 +21,7 @@ entities:
   - so_luong
   - phan_loai
   - info_product
+  - affirm
 slots:
   ma_sp:
     type: rasa.shared.core.slots.TextSlot
@@ -58,6 +61,14 @@ responses:
   - text: Để mình tìm xem nhé
   utter_ask_so_luong:
   - text: Bạn muốn số lượng bao nhiêu nhỉ ?
+  missing_ma_sp:
+  - text: Bạn chưa chọn sản phẩm nào
+  - text: Chọn sản phẩm trước nhé
+  - text: Chưa có sản phẩm nào được chọn
+  utter_mua_hang_slots:
+  - text: Bạn đã chọn sản phẩm {ten_sp} phân loại {phan_loai} với số lượng là {so_luong}
+  utter_submit:
+  - text: Xác nhận thêm giỏ hàng ?
 
 actions:
   - goi_y_sp
@@ -78,6 +89,11 @@ forms:
         type: from_entity
       so_luong:
       - entity: so_luong
+        type: from_entity
+  them_gio_hang_form:
+    required_slots:
+      affirm:
+      - entity: affirm
         type: from_entity
       
 e2e_actions: []

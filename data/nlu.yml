@@ -52,6 +52,17 @@ nlu:
   examples: |
     - Xin chào
 
+- intent: dong_y
+  examples: |
+    - Ok
+    - Xác nhận
+    - Đồng ý
+
+- intent: tu_choi
+  examples: |
+    - Thôi
+    - Không
+    - Từ chối
 
 - intent: ask_for_product
   examples: |
@@ -83,7 +94,7 @@ nlu:
     - [Đỏ](phan_loai)
     - màu [Vàng](phan_loai)
     - cho anh màu [den](phan_loai:Đen) nhé
-    - /sp_pl [BUT1_PL1](sp_phan_loai) /phan_loai [Đỏ](phan_loai)
+    - sp_pl [BUT1_PL1](sp_phan_loai)_phan_loai [Đỏ](phan_loai)
 
 - intent: ask_so_luong
   examples: |

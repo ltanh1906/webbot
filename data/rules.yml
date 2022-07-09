@@ -27,3 +27,18 @@ rules:
   - intent: mua_hang
   - action: mua_hang_form
   - active_loop: mua_hang_form
+
+- rule: Submit Form
+  condition:
+  - active_loop: mua_hang_form
+  steps:
+  - action: mua_hang_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
+  - action: utter_mua_hang_slots
+  - action: utter_submit
+  - or:
+    - intent: dong_y
+  - action: them_gio_hang_form
+  - active_loop: them_gio_hang_form

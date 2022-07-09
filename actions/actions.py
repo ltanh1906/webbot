@@ -1,5 +1,6 @@
 
 from cmath import e
+from dis import dis
 from email import message
 from html.entities import entitydefs
 import re
@@ -12,6 +13,7 @@ from rasa_sdk.events import EventType
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.types import DomainDict
+from regex import S
 from sqlalchemy import null
 
 mydb = mysql.connector.connect(
@@ -106,8 +108,11 @@ class AskSlotPhanLoai(Action):
         result = query_func(query, 'list')
         ARRAY_SELECT_PHAN_LOAI = result
         button = []
-        for a in result:
-            button.append({"payload":"/sp_pl " + a['sPK_Ma_PLSP'] +"/phan_loai "+a['sTenPL'], "title":a['sTenPL']})
+        for a in ARRAY_SELECT_PHAN_LOAI:
+            ma_lsp = '"sp_phan_loai":'+'"'+a['sPK_Ma_PLSP']+'"'
+            ten_pl = '"phan_loai":'+'"'+a['sTenPL']+'"'
+            s = "/inform_mua_hang{"+ma_lsp+","+ten_pl+"}"
+            button.append({"payload":s, "title":a['sTenPL']})
         print(button)
         dispatcher.utter_message(text="Bạn chọn phân loại sản phẩm nhé", buttons = button)
         return[]
@@ -124,8 +129,9 @@ class ValidateMuaHangForm(FormValidationAction):
         domain: DomainDict,
     ) -> Dict[Text, Any]:
         """Validate `ma_sp` value."""
-        print(slot_value)
-        return {}
+        query = f"SELECT sTen_SP FROM `sanpham` WHERE `sPK_Ma_SP` = '{slot_value}' "
+        result = query_func(query, "list")
+        return {"ten_sp":result[0]["sTen_SP"]}
 
     def validate_phan_loai(
         self,
@@ -158,6 +164,29 @@ class ValidateMuaHangForm(FormValidationAction):
             return {"so_luong": None}
         dispatcher.utter_message(text=f"OK! Số lượng là {slot_value}.")
         return {"so_luong": slot_value}
+class ValidateGioHangForm(FormValidationAction):
+    def name(self) -> Text:
+        return "validate_them_gio_hang_form"
+
+    def validate_affirm(
+        self,
+        slot_value: Any,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: DomainDict,
+    ) -> Dict[Text, Any]:
+        """Validate `phan_loai` value."""
+        last_intent = tracker.get_last_intent()
+        intent_arr = ['dong_y', 'tu_choi']
+        if last_intent not in intent_arr:
+            return {"affrim": None}
+        else:
+            if last_intent == 'dong_y':
+                dispatcher.utter_message(text="Đã thêm vào giỏ hàng")
+                return {"affrim": slot_value}
+            else:
+                dispatcher.utter_message(text="Xoá thông tin phân loại và số lương")
+                return {"affrim": slot_value}
 
 
 class CheckSoLuong(Action):
@@ -215,13 +244,14 @@ class AskInfoProduct(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
         ma_sp = tracker.get_slot('ma_sp')
-        ma_sp = "BUT1"
-        
-        for blob in tracker.latest_message['entities']:
-            ma_dd = blob['value']
-            if blob['entity'] == 'info_product':
-                query = f"SELECT sMota FROM `sanpham_dacdiem` JOIN sanpham on sFK_Ma_SP = sanpham.sPK_Ma_SP WHERE `sFK_Ma_SP` = '{ma_sp}' and `sFK_Ma_DD` = '{ma_dd}'"
-        if query:
-            result = query_func(query, 'list')
-            print(result)
+        if ma_sp is not None and ma_sp is not null:
+            for blob in tracker.latest_message['entities']:
+                ma_dd = blob['value']
+                if blob['entity'] == 'info_product':
+                    query = f"SELECT sMota FROM `sanpham_dacdiem` JOIN sanpham on sFK_Ma_SP = sanpham.sPK_Ma_SP WHERE `sFK_Ma_SP` = '{ma_sp}' and `sFK_Ma_DD` = '{ma_dd}'"
+            if query:
+                result = query_func(query, 'list')
+                print(result)
+        else:
+            dispatcher.utter_message(response = "missing_ma_sp")
         return[]
