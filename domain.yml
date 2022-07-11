@@ -1,4 +1,6 @@
 version: '2.0'
+config:
+  store_entities_as_slots: true
 session_config:
   session_expiration_time: 360
   carry_over_slots_to_new_session: true
@@ -7,21 +9,34 @@ intents:
     use_entities: true
 - ask_for_product:
     use_entities: true
-- ask_so_luong
-- ask_info_product
-- inform_mua_hang
-- mua_hang
-- select_product
-- dong_y
-- tu_choi
+- ask_so_luong:
+    use_entities: true
+- ask_info_product:
+    use_entities: true
+- inform_mua_hang:
+    use_entities: true
+- inform_them_gio_hang:
+    use_entities: true
+- mua_hang:
+    use_entities: true
+- select_product:
+    use_entities: true
+- dong_y:
+    use_entities: true
+- tu_choi:
+    use_entities: true
+- ask_price:
+    use_entities: true
 entities:
-  - type_product
-  - color
-  - ma_sp
-  - so_luong
-  - phan_loai
-  - info_product
-  - affirm
+- type_product
+- color
+- ma_sp
+- so_luong
+- phan_loai
+- info_product
+- affirm
+- gia_sp
+- sp_phan_loai
 slots:
   ma_sp:
     type: rasa.shared.core.slots.TextSlot
@@ -53,7 +68,16 @@ slots:
     initial_value: null
     auto_fill: true
     influence_conversation: true
-
+  affirm:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
+  requested_slot:
+    type: rasa.shared.core.slots.UnfeaturizedSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: false
 responses:
   utter_greet:
   - text: I am a bot, powered by Rasa.
@@ -61,6 +85,8 @@ responses:
   - text: Để mình tìm xem nhé
   utter_ask_so_luong:
   - text: Bạn muốn số lượng bao nhiêu nhỉ ?
+  utter_ask_affirm:
+  - text: Xác nhận thêm giỏ hàng ?
   missing_ma_sp:
   - text: Bạn chưa chọn sản phẩm nào
   - text: Chọn sản phẩm trước nhé
@@ -69,15 +95,22 @@ responses:
   - text: Bạn đã chọn sản phẩm {ten_sp} phân loại {phan_loai} với số lượng là {so_luong}
   utter_submit:
   - text: Xác nhận thêm giỏ hàng ?
-
+  utter_ask_price:
+  - text: Sản phẩm có giá {gia_sp} ạ
+  - text: Sản phẩm {ten_sp} có giá {gia_sp} ạ
+  - text: Giá của sản phẩm này là {gia_sp}
 actions:
-  - goi_y_sp
-  - action_ask_phan_loai
-  - set_product
-  - set_sp_phan_loai
-  - validate_mua_hang_form
-  - check_so_luong
-  - custom_info_product
+- goi_y_sp
+- action_ask_phan_loai
+- set_product
+- set_sp_phan_loai
+- validate_mua_hang_form
+- validate_them_gio_hang_form
+- check_so_luong
+- custom_info_product
+- get_price
+- reset_slot
+- xac_nhan_them_gh
 forms:
   mua_hang_form:
     required_slots:
@@ -95,5 +128,4 @@ forms:
       affirm:
       - entity: affirm
         type: from_entity
-      
 e2e_actions: []

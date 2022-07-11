@@ -7,6 +7,11 @@ rules:
   - intent: ask_for_product
   - action: goi_y_sp
 
+- rule: Hoi gia san pham
+  steps:
+  - intent: ask_price
+  - action: get_price
+
 - rule: Tu van thong tin chi tiet ve san pham
   steps:
   - intent: ask_info_product
@@ -37,8 +42,15 @@ rules:
   - slot_was_set:
     - requested_slot: null
   - action: utter_mua_hang_slots
-  - action: utter_submit
-  - or:
-    - intent: dong_y
   - action: them_gio_hang_form
   - active_loop: them_gio_hang_form
+
+- rule: Submit them gio hang
+  condition:
+  - active_loop: them_gio_hang_form
+  steps:
+  - action: them_gio_hang_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
+  - action: utter_greet

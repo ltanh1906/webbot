@@ -39,6 +39,11 @@ nlu:
     - Thước kẻ
     - Vở
     - Máy tính
+    - Bàn học
+    - Tập viết
+    - Sách giáo khoa
+    - Sách
+    - Sách tham khảo
 
 - lookup: info_product
   examples: |
@@ -46,23 +51,17 @@ nlu:
     - hãng
     - xuất xứ
     - bảo hành
+    - số trang
+    - kích thước
+    - đối tượng
+    - tác giả
+    - nhà xuất bản
+    - chất liệu
 
 
 - intent: greet
   examples: |
     - Xin chào
-
-- intent: dong_y
-  examples: |
-    - Ok
-    - Xác nhận
-    - Đồng ý
-
-- intent: tu_choi
-  examples: |
-    - Thôi
-    - Không
-    - Từ chối
 
 - intent: ask_for_product
   examples: |
@@ -96,6 +95,11 @@ nlu:
     - cho anh màu [den](phan_loai:Đen) nhé
     - sp_pl [BUT1_PL1](sp_phan_loai)_phan_loai [Đỏ](phan_loai)
 
+- intent: inform_mua_hang
+  examples: |
+    - [Ok](affirm:dong_y)
+    - [Đồng ý](affirm:dong_y)
+
 - intent: ask_so_luong
   examples: |
     - Sản phẩm này còn hàng không ?
@@ -103,3 +107,10 @@ nlu:
     - Còn không 
     - Còn bao nhiêu
     - Màu [đỏ](phan_loai) còn bao nhiêu
+
+- intent: ask_price
+  examples: |
+    - Giá sao 
+    - bao nhiêu
+    - bao tiền
+    - giá cả thế nào 

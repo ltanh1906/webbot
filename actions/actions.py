@@ -5,6 +5,9 @@ from email import message
 from html.entities import entitydefs
 import re
 import json
+import locale
+from unittest import result
+locale.setlocale(locale.LC_ALL, 'en_US')
 from typing import Text, List, Any, Dict
 from matplotlib.pyplot import get, text
 import mysql.connector
@@ -33,7 +36,7 @@ def query_func(query, return_type=''):
             list[row[0]] = dict(zip(colums, row))
         json_ouput = json.dumps(list)
         return list
-    else:
+    if return_type == 'list':
         list = []
         cursor = mydb.cursor()
         cursor.execute(query)
@@ -41,8 +44,6 @@ def query_func(query, return_type=''):
         for row in cursor.fetchall():
             list.append(dict(zip(colums, row)))
         return list
-
-ARRAY_SELECT_PHAN_LOAI = {}
 
 class GoiYSanPham(Action):
     def name(self) -> Text:
@@ -113,7 +114,7 @@ class AskSlotPhanLoai(Action):
             ten_pl = '"phan_loai":'+'"'+a['sTenPL']+'"'
             s = "/inform_mua_hang{"+ma_lsp+","+ten_pl+"}"
             button.append({"payload":s, "title":a['sTenPL']})
-        print(button)
+        # print(button)
         dispatcher.utter_message(text="Bạn chọn phân loại sản phẩm nhé", buttons = button)
         return[]
         
@@ -141,14 +142,22 @@ class ValidateMuaHangForm(FormValidationAction):
         domain: DomainDict,
     ) -> Dict[Text, Any]:
         """Validate `phan_loai` value."""
-        print(ARRAY_SELECT_PHAN_LOAI)
         if slot_value is None or slot_value is null:
-            print(1)
             dispatcher.utter_message(text=f"Validate phan_loai ne")
             return {"phan_loai": None}
-        print(2)
-        dispatcher.utter_message(text=f"OK! Phân loại hàng là {slot_value}")
-        return {"phan_loai": slot_value}
+        query = f"SELECT iSoLuong, sPK_Ma_PLSP FROM `phanloai_sanpham` WHERE `sTenPL` LIKE '%{slot_value}%' "
+        result = query_func(query, 'list')
+        if len(result) == 0:
+            dispatcher.utter_message(text=f"Không có phân loại sản phẩm này")
+            return {"phan_loai": None}
+        else:
+            if result[0]['iSoLuong'] == 0:
+                dispatcher.utter_message(text=f"Phân loại này hiện đang hết hàng")
+                return {"phan_loai": None}
+            else:
+                dispatcher.utter_message(text=f"OK! Đã chọn phân loại hàng {slot_value}")
+                return {"phan_loai": slot_value, "sp_phan_loai": result[0]['sPK_Ma_PLSP']}
+        
         
     def validate_so_luong(
         self,
@@ -158,12 +167,20 @@ class ValidateMuaHangForm(FormValidationAction):
         domain: DomainDict,
     ) -> Dict[Text, Any]:
         """Validate `so_luong` value."""
-        print(slot_value)
+        sp_phan_loai = tracker.get_slot('sp_phan_loai')
+        query = f"SELECT iSoLuong FROM `phanloai_sanpham` WHERE `sPK_Ma_PLSP` LIKE '%{sp_phan_loai}%' "
+        result = query_func(query, 'list')
         if int(slot_value) <= 0:
             dispatcher.utter_message(text=f"Số lượng không hợp lệ")
             return {"so_luong": None}
-        dispatcher.utter_message(text=f"OK! Số lượng là {slot_value}.")
-        return {"so_luong": slot_value}
+        else:
+            if result[0]['iSoLuong'] < int(slot_value):
+                dispatcher.utter_message(text=f"Phân loại hàng này không đủ số lượng đáp ứng yêu cầu của bạn .")
+                return {"phan_loai": None, "so_luong": None}
+            else:
+                dispatcher.utter_message(text=f"Số lượng là {slot_value}")
+                return {"so_luong": slot_value}
+
 class ValidateGioHangForm(FormValidationAction):
     def name(self) -> Text:
         return "validate_them_gio_hang_form"
@@ -176,17 +193,18 @@ class ValidateGioHangForm(FormValidationAction):
         domain: DomainDict,
     ) -> Dict[Text, Any]:
         """Validate `phan_loai` value."""
-        last_intent = tracker.get_last_intent()
+        # last_intent = tracker.latest_message['intent'].get('name')
+        # print(last_intent)
         intent_arr = ['dong_y', 'tu_choi']
-        if last_intent not in intent_arr:
-            return {"affrim": None}
+        if slot_value not in intent_arr:
+            return {"affirm": None}
         else:
-            if last_intent == 'dong_y':
+            if slot_value == 'dong_y':
                 dispatcher.utter_message(text="Đã thêm vào giỏ hàng")
-                return {"affrim": slot_value}
+                return {"affirm": slot_value}
             else:
                 dispatcher.utter_message(text="Xoá thông tin phân loại và số lương")
-                return {"affrim": slot_value}
+                return {"affirm": slot_value}
 
 
 class CheckSoLuong(Action):
@@ -252,6 +270,33 @@ class AskInfoProduct(Action):
             if query:
                 result = query_func(query, 'list')
                 print(result)
+        else:
+            dispatcher.utter_message(response = "missing_ma_sp")
+        return[]
+
+class AskPriceProduct(Action):
+    def name(self) -> Text:
+        return "get_price"
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> Dict[Text, Any]:
+        ma_sp = tracker.get_slot('ma_sp')
+        list_price = []
+        if ma_sp is not None and ma_sp is not null:
+            query = f"SELECT iGia FROM `phanloai_sanpham`  WHERE `sFK_Ma_SP` = '{ma_sp}'"
+            result = query_func(query, 'list')
+            for i in result:
+                list_price.append(i['iGia'])
+
+            max_price = locale.format("%d", max(list_price), grouping=True)
+            min_price = locale.format("%d", min(list_price), grouping=True)
+
+            if max(list_price) == min(list_price):
+                str_price = max_price
+            else:
+                str_price = "từ " + min_price + " - " + max_price
+
+            dispatcher.utter_message(response = "utter_ask_price", gia_sp = str_price)
         else:
             dispatcher.utter_message(response = "missing_ma_sp")
         return[]
