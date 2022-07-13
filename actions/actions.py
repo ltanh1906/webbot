@@ -51,7 +51,7 @@ class GoiYSanPham(Action):
     def run(
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
-        query = 'SELECT sFK_Ma_SP, sanpham.sTen_SP, sFK_Ma_DD, sMota FROM `sanpham_dacdiem` JOIN sanpham ON sFK_Ma_SP = sanpham.sPK_Ma_SP'
+        query = 'SELECT sFK_Ma_SP, sanpham.sTen_SP, sFK_Ma_DD, sMota, sPimage FROM `sanpham_dacdiem` JOIN sanpham ON sFK_Ma_SP = sanpham.sPK_Ma_SP'
         tensp = 0
         count_entity = 0
         count_record = 0
@@ -71,7 +71,10 @@ class GoiYSanPham(Action):
             return[]
         
         if count_entity != 0:
-            list_goiy = {"goi_y_sp":query_func(query)}
+            list_goiy = {
+                "text": "Gợi ý cho bạn một số sản phẩm",
+                "goi_y_sp":query_func(query)
+                }
             m = json.dumps(list_goiy)
             dispatcher.utter_message(json_message=list_goiy)
             print(list_goiy)
@@ -84,8 +87,8 @@ class SetSanPham(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
         ma_sp = tracker.get_slot('ma_sp')
-        ARRAY_SELECT_PHAN_LOAI = {}
-        return [SlotSet("type_phan_loai","color")]
+        print(ma_sp)
+        return {"ma_sp":ma_sp}
 
 class SetMaSPPhanLoai(Action):
     def name(self) -> Text:
@@ -213,7 +216,7 @@ class CheckSoLuong(Action):
     def run(
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
-        ma_sp = "BUT1"
+        ma_sp = tracker.get_slot('ma_sp')
         if ma_sp:
             query = f"SELECT * FROM `phanloai_sanpham` WHERE `sFK_Ma_SP` = '{ma_sp}' "
             entity_num = 0
