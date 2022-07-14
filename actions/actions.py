@@ -19,14 +19,14 @@ from rasa_sdk.types import DomainDict
 from regex import S
 from sqlalchemy import null
 
-mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="webbot"
-)
-
 def query_func(query, return_type=''):
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="webbot"
+    )
+
     if return_type == '':
         list = {}
         cursor = mydb.cursor()
@@ -87,7 +87,7 @@ class SetSanPham(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
         ma_sp = tracker.get_slot('ma_sp')
-        print(ma_sp)
+        dispatcher.utter_message(text="Đã lựa chọn sản phẩm. Bạn có thể yêu cầu thêm giỏ hàng hoặc những thông tin sản phẩm")
         return {"ma_sp":ma_sp}
 
 class SetMaSPPhanLoai(Action):
@@ -221,11 +221,14 @@ class CheckSoLuong(Action):
             query = f"SELECT * FROM `phanloai_sanpham` WHERE `sFK_Ma_SP` = '{ma_sp}' "
             entity_num = 0
             for blob in tracker.latest_message['entities']:
+                
                 if blob['entity'] == 'phan_loai':
                     entity_num += 1
                     query += f" AND `sTenPL` LIKE '%{blob['value']}%' "
             result = query_func(query, "list")
-
+            if not result:
+                dispatcher.utter_message(text="Phân loại hàng bạn yêu cầu không tồn tại")
+                return[]
             if entity_num != 0: #Nếu khách hàng hỏi cụ thể 1 phân loại nào
                 message_return = ""
                 if result[0]['iSoLuong'] == 0:
