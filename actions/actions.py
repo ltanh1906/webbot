@@ -24,7 +24,7 @@ def query_func(query, return_type=''):
         host="localhost",
         user="root",
         password="",
-        database="webbot"
+        database="rasa"
     )
 
     if return_type == '':
@@ -51,7 +51,7 @@ class GoiYSanPham(Action):
     def run(
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
-        query = 'SELECT sFK_Ma_SP, sanpham.sTen_SP, sFK_Ma_DD, sMota, sPimage FROM `sanpham_dacdiem` JOIN sanpham ON sFK_Ma_SP = sanpham.sPK_Ma_SP'
+        query = 'SELECT sFK_Ma_SP, sanpham_dacdiem.sMota, sTen_SP, sPimage, sGiaSP, sFK_Ma_DD  FROM `sanpham_dacdiem` JOIN sanpham ON sFK_Ma_SP = sanpham.sPK_Ma_SP JOIN danhmuc_dacdiem on sFK_Ma_DM_DD = danhmuc_dacdiem.sPK_Ma_DM_DD '
         tensp = 0
         count_entity = 0
         count_record = 0
@@ -62,9 +62,9 @@ class GoiYSanPham(Action):
                 tensp +=1
             elif blob['entity'] != 'phan_loai':
                 if tensp == 0:
-                    query += f" WHERE sFK_Ma_DD = '{blob['entity']}' AND sMota like '%{blob['value']}%'"
+                    query += f" WHERE sFK_Ma_DD = '{blob['entity']}' AND sanpham_dacdiem.sMota like '%{blob['value']}%'"
                 else:
-                    query += f" AND sFK_Ma_DD = '{blob['entity']}' AND sMota like '%{blob['value']}%'"
+                    query += f" AND sFK_Ma_DD = '{blob['entity']}' AND sanpham_dacdiem.sMota like '%{blob['value']}%'"
         
         if count_entity == 0:
             dispatcher.utter_message(text="Cung cấp cho mình tên sản phẩm hoặc mô tả bạn quan tâm nhé")
@@ -80,15 +80,8 @@ class GoiYSanPham(Action):
             print(list_goiy)
         return []
 
-class SetSanPham(Action):
-    def name(self) -> Text:
-        return "set_product"
-    def run(
-        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
-    ) -> Dict[Text, Any]:
-        ma_sp = tracker.get_slot('ma_sp')
-        dispatcher.utter_message(text="Đã lựa chọn sản phẩm. Bạn có thể yêu cầu thêm giỏ hàng hoặc những thông tin sản phẩm")
-        return {"ma_sp":ma_sp}
+
+        
 
 class SetMaSPPhanLoai(Action):
     def name(self) -> Text:
@@ -268,14 +261,22 @@ class AskInfoProduct(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
         ma_sp = tracker.get_slot('ma_sp')
+        num_entity = 0
         if ma_sp is not None and ma_sp is not null:
             for blob in tracker.latest_message['entities']:
                 ma_dd = blob['value']
                 if blob['entity'] == 'info_product':
-                    query = f"SELECT sMota FROM `sanpham_dacdiem` JOIN sanpham on sFK_Ma_SP = sanpham.sPK_Ma_SP WHERE `sFK_Ma_SP` = '{ma_sp}' and `sFK_Ma_DD` = '{ma_dd}'"
+                    num_entity += 1
+                    query = f"SELECT sFK_Ma_SP, sanpham_dacdiem.sMota FROM `sanpham_dacdiem` JOIN sanpham on sFK_Ma_SP = sanpham.sPK_Ma_SP JOIN danhmuc_dacdiem on sFK_Ma_DM_DD = danhmuc_dacdiem.sPK_Ma_DM_DD WHERE `sFK_Ma_SP` = '{ma_sp}' and `sFK_Ma_DD` = '{ma_dd}'"
+            if num_entity == 0:
+                query = f"SELECT sFK_Ma_SP, sanpham.sMota FROM `sanpham_dacdiem` JOIN sanpham on sFK_Ma_SP = sanpham.sPK_Ma_SP JOIN danhmuc_dacdiem on sFK_Ma_DM_DD = danhmuc_dacdiem.sPK_Ma_DM_DD WHERE `sFK_Ma_SP` = '{ma_sp}' and `sFK_Ma_DD` = '{ma_dd}'"
             if query:
-                result = query_func(query, 'list')
-                print(result)
+                result = query_func(query)
+            
+            if result:
+                dispatcher.utter_message(text=f"{result[ma_sp]['sMota']}")
+            else:
+                dispatcher.utter_message(text=f"Thông tin bạn quan tâm chưa được cập nhật hoặc không tồn tại")
         else:
             dispatcher.utter_message(response = "missing_ma_sp")
         return[]
@@ -287,22 +288,32 @@ class AskPriceProduct(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
         ma_sp = tracker.get_slot('ma_sp')
+        print(tracker.get_slot('ten_sp'))
         list_price = []
         if ma_sp is not None and ma_sp is not null:
-            query = f"SELECT iGia FROM `phanloai_sanpham`  WHERE `sFK_Ma_SP` = '{ma_sp}'"
+            query = f"SELECT sGiaSP FROM `sanpham`  WHERE `sPK_Ma_SP` = '{ma_sp}'"
             result = query_func(query, 'list')
-            for i in result:
-                list_price.append(i['iGia'])
-
-            max_price = locale.format("%d", max(list_price), grouping=True)
-            min_price = locale.format("%d", min(list_price), grouping=True)
-
-            if max(list_price) == min(list_price):
-                str_price = max_price
-            else:
-                str_price = "từ " + min_price + " - " + max_price
-
-            dispatcher.utter_message(response = "utter_ask_price", gia_sp = str_price)
+            if result:
+                dispatcher.utter_message(response = "utter_ask_price", gia_sp = result[0]['sGiaSP'])
         else:
             dispatcher.utter_message(response = "missing_ma_sp")
         return[]
+
+class SetSanPham(Action):
+    def name(self) -> Text:
+        return "set_product"
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> Dict[Text, Any]:
+        ma_sp = tracker.get_slot('ma_sp')
+        query = f"SELECT sTen_SP FROM sanpham WHERE `sPK_Ma_SP` = '{ma_sp}'"
+        result = query_func(query, 'list')
+
+        if result:
+            dispatcher.utter_message(text="Đã lựa chọn sản phẩm. Bạn có thể yêu cầu thêm giỏ hàng hoặc những thông tin sản phẩm")
+            
+            return [SlotSet("ten_sp", result[0]['sTen_SP'])]
+        else:
+            dispatcher.utter_message(text="Không tồn tại sản phẩm này")
+            
+            return [SlotSet("ma_sp", None)]
