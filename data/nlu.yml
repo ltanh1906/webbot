@@ -1,7 +1,7 @@
 version: "2.0"
 
 nlu:
-
+# Xử lý từ đồng nghĩa
 - synonym: Xanh
   examples: |
     - xanh
@@ -25,6 +25,7 @@ nlu:
     - den
     - đen
 
+# Lookup table
 - lookup: color
   examples: |
     - Đỏ
@@ -58,7 +59,45 @@ nlu:
     - nhà xuất bản
     - chất liệu
 
+- lookup: brand
+  examples: |
+    - Thiên Long
+    - Campus
+    - Hồng Hà
+    - Axeon
+    - KLONG
+    - Guden
 
+- lookup: size
+  examples: |
+    - A2
+    - A3
+    - A4
+    - A5
+    - 10cm
+    - 20cm
+
+- lookup: material
+  examples: |
+    - Nhôm
+    - Đồng
+    - Gỗ
+    - Nhựa
+    - Giấy
+    - Giấy chống lóa
+
+- lookup: origin
+  examples: |
+    - Việt Nam
+    - Trung Quốc
+
+- lookup: specifications
+  examples: |
+    - Dung tích
+    - Khổ giấy
+    - Ngòi bút
+
+# Intent
 - intent: greet
   examples: |
     - Xin chào
@@ -66,8 +105,18 @@ nlu:
 - intent: ask_for_product
   examples: |
     - Shop co [but chi](type_product:Bút chì) mau [vang]{"entity":"color", "value":"Vàng"} không ?
+    - Shop có [bút](type_product) màu [trắng]{"entity":"color"}
     - Tim [vo](type_product:Vở) mau [chàm]{"entity":"color", "value":"Xanh"}
+    - Có [vở](type_product) cỡ [A3]{"entity":"size", "value":"A3"}
+    - Gợi ý cho tổi [vở](type_product) [A4]{"entity":"size"}
+    - Cần tìm [vở](type_product) của [Hồng Hà]{"entity":"brand"}
+    - [bút](type_product) [Axeon]{"entity":"brand"}
+    - Shop có [bút](type_product) [thiên long]{"entity":"brand"} không
+    - Có [vở](type_product) của hãng [Campus]{"entity":"brand"} không 
     - Co [but](type_product:bút) mau [den]{"entity":"color", "value":"Đen"} khong ?
+    - tìm [bút](type_product) của [Việt Nam]{"entity":"origin"}
+    - tôi đang tìm [vở](type_product) có [giấy chống lóa]{"entity":"material"}
+
 
 - intent: ask_info_product
   examples: |

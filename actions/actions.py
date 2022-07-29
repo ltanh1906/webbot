@@ -24,7 +24,7 @@ def query_func(query, return_type=''):
         host="localhost",
         user="root",
         password="",
-        database="rasa"
+        database="bot3"
     )
 
     if return_type == '':
@@ -44,6 +44,13 @@ def query_func(query, return_type=''):
         for row in cursor.fetchall():
             list.append(dict(zip(colums, row)))
         return list
+    if return_type == 'query_1col':
+        list = []
+        cursor = mydb.cursor()
+        cursor.execute(query)
+        for row in cursor.fetchall():
+            list.append(row[0])
+        return list
 
 class GoiYSanPham(Action):
     def name(self) -> Text:
@@ -54,13 +61,17 @@ class GoiYSanPham(Action):
         query = 'SELECT sFK_Ma_SP, sanpham_dacdiem.sMota, sTen_SP, sPimage, sGiaSP, sFK_Ma_DD  FROM `sanpham_dacdiem` JOIN sanpham ON sFK_Ma_SP = sanpham.sPK_Ma_SP JOIN danhmuc_dacdiem on sFK_Ma_DM_DD = danhmuc_dacdiem.sPK_Ma_DM_DD '
         tensp = 0
         count_entity = 0
-        count_record = 0
+        query_1 = 'SELECT sPK_Ma_DD FROM `dacdiem`'
+        LIST_DD = query_func(query_1, 'query_1col')
+
+        LIST_DUP = []
         for blob in tracker.latest_message['entities']:
             count_entity += 1
             if blob['entity'] == 'type_product' and tensp == 0:
                 query += f" WHERE sTen_SP like '%{blob['value']}%' "
                 tensp +=1
-            elif blob['entity'] != 'phan_loai':
+            elif blob['entity'] in LIST_DD and blob['entity'] not in LIST_DUP:
+                LIST_DUP.append(blob['entity'])
                 if tensp == 0:
                     query += f" WHERE sFK_Ma_DD = '{blob['entity']}' AND sanpham_dacdiem.sMota like '%{blob['value']}%'"
                 else:
@@ -69,7 +80,6 @@ class GoiYSanPham(Action):
         if count_entity == 0:
             dispatcher.utter_message(text="Cung cấp cho mình tên sản phẩm hoặc mô tả bạn quan tâm nhé")
             return[]
-        
         if count_entity != 0:
             list_goiy = {
                 "text": "Gợi ý cho bạn một số sản phẩm",

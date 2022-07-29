@@ -1,0 +1,28 @@
+[
+  {
+    "text": "sp_pl BUT1_PL1_phan_loai Đỏ",
+    "entities": [
+      {
+        "start": 6,
+        "end": 14,
+        "value": "BUT1_PL1",
+        "entity": "sp_phan_loai"
+      },
+      {
+        "start": 25,
+        "end": 27,
+        "value": "Đỏ",
+        "entity": "phan_loai"
+      }
+    ],
+    "predicted_entities": [
+      {
+        "entity": "color",
+        "start": 25,
+        "end": 27,
+        "value": "Đỏ",
+        "extractor": "RegexEntityExtractor"
+      }
+    ]
+  }
+]

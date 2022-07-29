@@ -1,0 +1,110 @@
+{
+  "size": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 2,
+    "confused_with": {}
+  },
+  "type_product": {
+    "precision": 0.8333333333333334,
+    "recall": 0.38461538461538464,
+    "f1-score": 0.5263157894736842,
+    "support": 13,
+    "confused_with": {}
+  },
+  "affirm": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1-score": 0.0,
+    "support": 2,
+    "confused_with": {
+      "material": 1
+    }
+  },
+  "info_product": {
+    "precision": 0.375,
+    "recall": 0.75,
+    "f1-score": 0.5,
+    "support": 4,
+    "confused_with": {}
+  },
+  "so_luong": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1-score": 0.0,
+    "support": 3,
+    "confused_with": {}
+  },
+  "phan_loai": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1-score": 0.0,
+    "support": 4,
+    "confused_with": {
+      "color": 3
+    }
+  },
+  "origin": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 1,
+    "confused_with": {}
+  },
+  "color": {
+    "precision": 0.2,
+    "recall": 0.25,
+    "f1-score": 0.22222222222222224,
+    "support": 4,
+    "confused_with": {}
+  },
+  "material": {
+    "precision": 0.5,
+    "recall": 0.3333333333333333,
+    "f1-score": 0.4,
+    "support": 3,
+    "confused_with": {}
+  },
+  "ma_sp": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1-score": 0.0,
+    "support": 2,
+    "confused_with": {}
+  },
+  "brand": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 4,
+    "confused_with": {}
+  },
+  "sp_phan_loai": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1-score": 0.0,
+    "support": 1,
+    "confused_with": {
+      "color": 1
+    }
+  },
+  "micro avg": {
+    "precision": 0.6071428571428571,
+    "recall": 0.3953488372093023,
+    "f1-score": 0.4788732394366197,
+    "support": 43
+  },
+  "macro avg": {
+    "precision": 0.40902777777777777,
+    "recall": 0.39316239316239315,
+    "f1-score": 0.38737816764132554,
+    "support": 43
+  },
+  "weighted avg": {
+    "precision": 0.5031007751937985,
+    "recall": 0.3953488372093023,
+    "f1-score": 0.41699986400108796,
+    "support": 43
+  }
+}

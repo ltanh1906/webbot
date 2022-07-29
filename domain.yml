@@ -37,6 +37,15 @@ entities:
 - affirm
 - gia_sp
 - sp_phan_loai
+- author
+- brand
+- guarantee
+- material
+- origin
+- publishing
+- size
+- specifications
+- subject
 slots:
   ma_sp:
     type: rasa.shared.core.slots.TextSlot
@@ -80,7 +89,9 @@ slots:
     influence_conversation: false
 responses:
   utter_greet:
-  - text: I am a bot, powered by Rasa.
+  - text: Chào bạn mình là Aris, mình có thể giúp gì cho bạn nhỉ.
+  utter_challenge:
+  - text: Aris có thể giúp bạn tìm kiếm, gợi ý sản phẩm đồng thời cung cấp thông tin sản phẩm theo yêu cầu. Ngoài ra Aris cũng có thể hỗ trợ bạn thêm sản phẩm vào giỏ hàng.
   utter_ask_for_product:
   - text: Để mình tìm xem nhé
   utter_ask_so_luong:
