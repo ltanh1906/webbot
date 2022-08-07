@@ -27,6 +27,8 @@ intents:
     use_entities: true
 - ask_price:
     use_entities: true
+- bot_challenge:
+    use_entities: true
 entities:
 - type_product
 - color
@@ -92,6 +94,9 @@ responses:
   - text: Chào bạn mình là Aris, mình có thể giúp gì cho bạn nhỉ.
   utter_challenge:
   - text: Aris có thể giúp bạn tìm kiếm, gợi ý sản phẩm đồng thời cung cấp thông tin sản phẩm theo yêu cầu. Ngoài ra Aris cũng có thể hỗ trợ bạn thêm sản phẩm vào giỏ hàng.
+  utter_continue:
+  - text: Bạn cần gì nữa không ?
+  - text: Mình có thể giúp gì thêm không ?
   utter_ask_for_product:
   - text: Để mình tìm xem nhé
   utter_ask_so_luong:

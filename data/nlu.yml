@@ -101,6 +101,16 @@ nlu:
 - intent: greet
   examples: |
     - Xin chào
+    - hi
+    - chào shop
+    - hi shop
+    - hello
+
+- intent: bot_challenge
+  examples: |
+    - Bạn có thể làm gì ?
+    - b giúp được gì 
+    - bạn là bot à
 
 - intent: ask_for_product
   examples: |

@@ -1,6 +1,10 @@
 version: "2.0"
 
 rules:
+- rule: greet
+  steps:
+  - intent: greet
+  - action: utter_greet
 
 - rule: Tu van san pham
   steps:
@@ -53,4 +57,4 @@ rules:
   - active_loop: null
   - slot_was_set:
     - requested_slot: null
-  - action: utter_greet
+  - action: reset_slot

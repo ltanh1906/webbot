@@ -6,6 +6,7 @@ from html.entities import entitydefs
 import re
 import json
 import locale
+import time
 from unittest import result
 locale.setlocale(locale.LC_ALL, 'en_US')
 from typing import Text, List, Any, Dict
@@ -19,13 +20,18 @@ from rasa_sdk.types import DomainDict
 from regex import S
 from sqlalchemy import null
 
-def query_func(query, return_type=''):
+def query_func(query, return_type='', add = ''):
     mydb = mysql.connector.connect(
         host="localhost",
         user="root",
         password="",
-        database="bot3"
+        database="bot4"
     )
+    if add == 'add':
+        cursor = mydb.cursor()
+        cursor.execute(query)
+        mydb.commit()
+        return cursor.rowcount
 
     if return_type == '':
         list = {}
@@ -63,12 +69,13 @@ class GoiYSanPham(Action):
         count_entity = 0
         query_1 = 'SELECT sPK_Ma_DD FROM `dacdiem`'
         LIST_DD = query_func(query_1, 'query_1col')
-
+        # print(LIST_DD);
         LIST_DUP = []
         for blob in tracker.latest_message['entities']:
             count_entity += 1
             if blob['entity'] == 'type_product' and tensp == 0:
                 query += f" WHERE sTen_SP like '%{blob['value']}%' "
+                query2 = query
                 tensp +=1
             elif blob['entity'] in LIST_DD and blob['entity'] not in LIST_DUP:
                 LIST_DUP.append(blob['entity'])
@@ -76,18 +83,23 @@ class GoiYSanPham(Action):
                     query += f" WHERE sFK_Ma_DD = '{blob['entity']}' AND sanpham_dacdiem.sMota like '%{blob['value']}%'"
                 else:
                     query += f" AND sFK_Ma_DD = '{blob['entity']}' AND sanpham_dacdiem.sMota like '%{blob['value']}%'"
-        
+        query += "  LIMIT 3"
         if count_entity == 0:
             dispatcher.utter_message(text="Cung cấp cho mình tên sản phẩm hoặc mô tả bạn quan tâm nhé")
             return[]
         if count_entity != 0:
+            resultsql = query_func(query)
+            if not resultsql:
+                query2 += "  LIMIT 4"
+                resultsql = query_func(query2)
+            # print(resultsql)
             list_goiy = {
                 "text": "Gợi ý cho bạn một số sản phẩm",
-                "goi_y_sp":query_func(query)
+                "goi_y_sp":resultsql
                 }
             m = json.dumps(list_goiy)
             dispatcher.utter_message(json_message=list_goiy)
-            print(list_goiy)
+            # print(list_goiy)
         return []
 
 
@@ -199,15 +211,35 @@ class ValidateGioHangForm(FormValidationAction):
         domain: DomainDict,
     ) -> Dict[Text, Any]:
         """Validate `phan_loai` value."""
-        # last_intent = tracker.latest_message['intent'].get('name')
-        # print(last_intent)
         intent_arr = ['dong_y', 'tu_choi']
         if slot_value not in intent_arr:
             return {"affirm": None}
         else:
             if slot_value == 'dong_y':
-                dispatcher.utter_message(text="Đã thêm vào giỏ hàng")
-                return {"affirm": slot_value}
+                id = tracker.sender_id
+                ma_plsp = tracker.get_slot('sp_phan_loai')
+                soluong = tracker.get_slot('so_luong')
+                query_check = f"SELECT * FROM `giohang` WHERE `sFK_TenTK` = '{id}' AND `sFK_Ma_PLSP` = '{ma_plsp}'"
+                check_isset = query_func(query_check, 'list')
+                if not check_isset:
+                    now = int(round(time.time() * 1000))
+                    id_giohang = f"{id}_{now}"
+                    add_query = f"INSERT INTO `giohang` (`PK_Ma_Donhang`, `sFK_TenTK`, `sFK_Ma_PLSP`, `iSoluong`, `iTrangthai`) VALUES ('{id_giohang}','{id}','{ma_plsp}',{soluong},'')"
+                    check_add = query_func(add_query, '', 'add')
+                    if check_add == 1:
+                        dispatcher.utter_message(text="Đã thêm vào giỏ hàng")
+                        return {"affirm": slot_value}
+                    else:
+                        dispatcher.utter_message(text="Lỗi khi thêm vào giỏ hàng")
+                        return {"affirm": slot_value}
+                else:
+                    new_sl = int(check_isset[0]['iSoluong']) + int(soluong)
+                    update_query = f"UPDATE `giohang` SET `iSoluong`= {new_sl}  WHERE `sFK_TenTK` = '{id}' AND `sFK_Ma_PLSP` = '{ma_plsp}'"
+                    check_update = query_func(update_query, '', 'add')
+                    if check_update == 1:
+                        dispatcher.utter_message(text="Đã thêm vào giỏ hàng")
+                        return {"affirm": slot_value}
+                
             else:
                 dispatcher.utter_message(text="Xoá thông tin phân loại và số lương")
                 return {"affirm": slot_value}
@@ -282,7 +314,6 @@ class AskInfoProduct(Action):
                 query = f"SELECT sFK_Ma_SP, sanpham.sMota FROM `sanpham_dacdiem` JOIN sanpham on sFK_Ma_SP = sanpham.sPK_Ma_SP JOIN danhmuc_dacdiem on sFK_Ma_DM_DD = danhmuc_dacdiem.sPK_Ma_DM_DD WHERE `sFK_Ma_SP` = '{ma_sp}' and `sFK_Ma_DD` = '{ma_dd}'"
             if query:
                 result = query_func(query)
-            
             if result:
                 dispatcher.utter_message(text=f"{result[ma_sp]['sMota']}")
             else:
@@ -298,7 +329,7 @@ class AskPriceProduct(Action):
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
     ) -> Dict[Text, Any]:
         ma_sp = tracker.get_slot('ma_sp')
-        print(tracker.get_slot('ten_sp'))
+        # print(tracker.get_slot('ten_sp'))
         list_price = []
         if ma_sp is not None and ma_sp is not null:
             query = f"SELECT sGiaSP FROM `sanpham`  WHERE `sPK_Ma_SP` = '{ma_sp}'"
@@ -318,12 +349,19 @@ class SetSanPham(Action):
         ma_sp = tracker.get_slot('ma_sp')
         query = f"SELECT sTen_SP FROM sanpham WHERE `sPK_Ma_SP` = '{ma_sp}'"
         result = query_func(query, 'list')
-
+        # print(tracker.latest_message)
         if result:
             dispatcher.utter_message(text="Đã lựa chọn sản phẩm. Bạn có thể yêu cầu thêm giỏ hàng hoặc những thông tin sản phẩm")
             
             return [SlotSet("ten_sp", result[0]['sTen_SP'])]
         else:
             dispatcher.utter_message(text="Không tồn tại sản phẩm này")
-            
             return [SlotSet("ma_sp", None)]
+
+class ResetSlot(Action):
+    def name(self) -> Text:
+        return "reset_slot"
+    def run(
+        self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict
+    ) -> Dict[Text, Any]:
+        return [SlotSet("affirm", None),SlotSet("phan_loai", None),SlotSet("so_luong", None),SlotSet("sp_phan_loai", None)]
